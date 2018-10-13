@@ -1,3 +1,5 @@
+/*eslint-disable*/
+
 const { ApolloLink, Observable } = require('apollo-link')
 const {
   selectURI,
@@ -7,7 +9,60 @@ const {
   createSignalIfSupported,
   parseAndCheckHttpResponse
 } = require('apollo-link-http-common')
-const { extractFiles, ReactNativeFile } = require('extract-files')
+
+
+// hardcode everything here
+
+function _isObject(value) {
+  return typeof value === 'object' && value !== null
+}
+
+function _ReactNativeFile(_ref) {
+  var uri = _ref.uri,
+    name = _ref.name,
+    type = _ref.type
+  this.uri = uri
+  this.name = name
+  this.type = type
+}
+
+function extractFiles(tree, treePath) {
+  if (treePath === void 0) {
+    treePath = ''
+  }
+
+  var files = []
+
+  var recurse = function recurse(node, nodePath) {
+    Object.keys(node).forEach(function(key) {
+      if (!(0, _isObject)(node[key])) return
+      var path = '' + nodePath + key
+
+      if (
+        (typeof File !== 'undefined' && node[key] instanceof File) ||
+        (typeof Blob !== 'undefined' && node[key] instanceof Blob) ||
+        node[key] instanceof _ReactNativeFile
+      ) {
+        files.push({
+          path: path,
+          file: node[key]
+        })
+        node[key] = null
+        return
+      }
+
+      if (typeof FileList !== 'undefined' && node[key] instanceof FileList)
+        node[key] = Array.prototype.slice.call(node[key])
+      recurse(node[key], path + '.')
+    })
+  }
+
+  if ((0, _isObject)(tree))
+    recurse(tree, treePath === '' ? treePath : treePath + '.')
+  return files
+}
+
+// end hardcoding session
 
 /**
  * A React Native [`File`](https://developer.mozilla.org/docs/web/api/file)
@@ -50,7 +105,7 @@ const { extractFiles, ReactNativeFile } = require('extract-files')
  * })
  * ```
  */
-exports.ReactNativeFile = ReactNativeFile
+exports.ReactNativeFile = _ReactNativeFile
 
 /**
  * GraphQL request `fetch` options.
