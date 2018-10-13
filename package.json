@@ -73,7 +73,8 @@
     "*.{json,yml,md}": "prettier -l"
   },
   "eslintIgnore": [
-    "lib"
+    "lib",
+    "build"
   ],
   "eslintConfig": {
     "extends": [
